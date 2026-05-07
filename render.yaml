@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: stremio-iptv-addon
+    name: stremio-m3u-auto
     runtime: node
     buildCommand: npm install
     startCommand: node index.js

@@ -1,32 +1,29 @@
-# IPTV Stremio OneClick Deploy
+# STREMIO M3U AUTO
 
-Projeto pronto para deploy automático no Render.
+Addon automático que lê listas M3U e cria categorias sozinho.
 
-## Deploy automático
+## COMO USAR
 
-1. Crie conta:
-https://render.com
+1. Substitua:
+lista.m3u8
 
-2. Envie os arquivos para o GitHub
+pela sua lista IPTV.
 
-3. No Render clique:
-New + -> Blueprint
+2. Envie para GitHub
 
-4. Escolha o repositório
+3. Deploy no Render
 
-5. Deploy automático
+4. Pronto
 
-## Manifest
-
-Depois do deploy:
+## LINK FINAL
 
 https://SEUAPP.onrender.com/manifest.json
 
-Cole no Stremio.
+## FUNCIONALIDADES
 
-## Compatível com:
-- Android TV
-- TV Box
-- Windows
-- Linux
-- Celular
+- categorias automáticas
+- logos automáticas
+- canais ilimitados
+- compatível Android TV
+- compatível celular
+- compatível PC

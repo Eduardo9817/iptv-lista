@@ -1,59 +1,63 @@
+const fs = require("fs")
+const parser = require("iptv-playlist-parser")
 const { addonBuilder, serveHTTP } = require("stremio-addon-sdk")
 
+// LER ARQUIVO M3U
+const playlist = fs.readFileSync("./lista.m3u8", "utf8")
+const parsed = parser.parse(playlist)
+
+// PEGAR CATEGORIAS
+const categoriasMap = {}
+
+parsed.items.forEach(item => {
+
+    const categoria = item.group?.title || "Outros"
+
+    if (!categoriasMap[categoria]) {
+        categoriasMap[categoria] = []
+    }
+
+    categoriasMap[categoria].push({
+        id: item.name.replace(/\s+/g, "_").toLowerCase(),
+        type: "tv",
+        name: item.name,
+        poster: item.tvg?.logo || "https://via.placeholder.com/300x450.png?text=TV"
+    })
+})
+
+// GERAR CATALOGOS
+const catalogs = Object.keys(categoriasMap).map(cat => ({
+    type: "tv",
+    id: cat,
+    name: cat
+}))
+
 const manifest = {
-    id: "org.onedeploy.iptv",
-    version: "1.0.0",
-    name: "IPTV BR OneClick",
-    description: "Addon IPTV online para Stremio",
+    id: "org.auto.m3u",
+    version: "2.0.0",
+    name: "IPTV Auto Categorias",
+    description: "Addon automático para listas M3U",
     resources: ["catalog", "meta", "stream"],
     types: ["tv"],
-    catalogs: [
-        {
-            type: "tv",
-            id: "brasil",
-            name: "🇧🇷 TV Brasil"
-        },
-        {
-            type: "tv",
-            id: "esportes",
-            name: "⚽ Esportes"
-        }
-    ]
+    catalogs
 }
 
 const builder = new addonBuilder(manifest)
 
-const canais = {
-    brasil: [
-        {
-            id: "sbt",
-            type: "tv",
-            name: "SBT",
-            poster: "https://logodownload.org/wp-content/uploads/2013/12/sbt-logo.png"
-        }
-    ],
-
-    esportes: [
-        {
-            id: "sportv",
-            type: "tv",
-            name: "SporTV",
-            poster: "https://upload.wikimedia.org/wikipedia/commons/4/4e/SporTV_logo_2021.png"
-        }
-    ]
-}
-
+// CATALOGOS
 builder.defineCatalogHandler(({ id }) => {
+
     return Promise.resolve({
-        metas: canais[id] || []
+        metas: categoriasMap[id] || []
     })
 })
 
+// META
 builder.defineMetaHandler(({ id }) => {
 
-    for (const categoria in canais) {
+    for (const categoria in categoriasMap) {
 
-        const canal = canais[categoria].find(c => c.id === id)
+        const canal = categoriasMap[categoria].find(c => c.id === id)
 
         if (canal) {
             return Promise.resolve({
@@ -65,19 +69,22 @@ builder.defineMetaHandler(({ id }) => {
     return Promise.resolve({ meta: {} })
 })
 
+// STREAMS
 builder.defineStreamHandler(({ id }) => {
 
-    const streams = {
-        sbt: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        sportv: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-    }
+    let streamUrl = null
+
+    parsed.items.forEach(item => {
+
+        const itemId = item.name.replace(/\s+/g, "_").toLowerCase()
+
+        if (itemId === id) {
+            streamUrl = item.url
+        }
+    })
 
     return Promise.resolve({
-        streams: [
-            {
-                url: streams[id]
-            }
-        ]
+        streams: streamUrl ? [{ url: streamUrl }] : []
     })
 })
 
@@ -85,4 +92,4 @@ const PORT = process.env.PORT || 7000
 
 serveHTTP(builder.getInterface(), { port: PORT })
 
-console.log(`Addon online na porta ${PORT}`)
+console.log("Addon online na porta " + PORT)
