@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: stremio-iptv-addon
+    runtime: node
+    buildCommand: npm install
+    startCommand: node index.js
+    plan: free
